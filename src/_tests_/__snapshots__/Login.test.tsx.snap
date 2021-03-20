@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Login test 1`] = `
+<div
+  className="login"
+>
+  <h1>
+    ログインする
+  </h1>
+  <a
+    href="https://accounts.spotify.com/authorize?client_id=5c084d85cb73478fb7d26906f0214f78&redirect_uri=http://localhost:3000/&scope=user-read-recently-played%20user-top-read%20user-read-playback-position&response_type=token&show_dialog=true"
+  >
+    Spotifyにログイン
+  </a>
+</div>
+`;
