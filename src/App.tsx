@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
-import logo from "./logo.svg";
+import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import "./App.css";
 import Login, { getUriHash } from "./Login";
 import Main from "./Main";
 
 const App = () => {
-  const [token, setToken] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const hash = getUriHash();
@@ -14,12 +14,24 @@ const App = () => {
     console.log(accessToken);
 
     if (accessToken) {
-      setToken(accessToken);
+      setIsLoggedIn(true);
     }
   }, []);
 
-  return <div>{token ? <Main /> : <Login />}</div>;
-  // return <Login />;
+  return (
+    <div>
+      <Router>
+        <div>
+          {console.log(isLoggedIn)}
+          {isLoggedIn === true ? (
+            <Route exact path="/" component={Main} />
+          ) : (
+            <Route path="/login" component={Login} />
+          )}
+        </div>
+      </Router>
+    </div>
+  );
 };
 
 export default App;
