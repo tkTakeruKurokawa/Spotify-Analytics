@@ -4,7 +4,15 @@ import "./App.css";
 import Login, { getUriHash } from "./Login/Login";
 import Main from "./Main/Main";
 
-export const TokenContext = React.createContext<string>("");
+export type RequestRequirements = {
+  token: string;
+  artistsId?: string[];
+  albumsId?: string[];
+};
+
+export const TokenContext = React.createContext<RequestRequirements>({
+  token: "",
+});
 
 const GetToken = () => {
   const hash = getUriHash();
@@ -18,7 +26,7 @@ const App = () => {
 
   return (
     <div>
-      <TokenContext.Provider value={token}>
+      <TokenContext.Provider value={{ token: token }}>
         <Router>
           <div>
             <Route path="/login" component={Login} />

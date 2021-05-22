@@ -1,65 +1,69 @@
 import axios from "axios";
 import { useContext, useEffect, useState } from "react";
 import { Redirect, Router } from "react-router-dom";
-import { TokenContext } from "../../App";
+import { TokenContext, RequestRequirements } from "../../App";
+import GetAdditional from "./Additional/GetAdditional";
 
-const getTopArtists = (): JSX.Element => {
-  const response = GetDataFromSpotifyAPI("artists");
-
-  if (response[0] === "error") {
-    return (
-      <div>
-        <Redirect to="/login" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="artists">
-      {response.map((items, index) => {
-        const image = items.images[1].url;
-        const artist = items.name;
-
-        if (index === 2) {
-          console.log("Artists", items);
-        }
-
-        return buildJSX("artist", index + 1, image, artist);
-      })}
-    </div>
-  );
-};
-
-const getTopTracks = (): JSX.Element => {
-  const response = GetDataFromSpotifyAPI("tracks");
+const getTopArtists = (
+  token: string
+): [JSX.Element[], string[] | undefined] => {
+  const response = GetDataFromSpotifyAPI("artists", token);
+  const htmlList: JSX.Element[] = [];
+  const artistsIds: string[] = [];
 
   if (response[0] === "error") {
-    return (
-      <div>
-        <Redirect to="/login" />
-      </div>
-    );
+    return [GetRedirectHtml(), []];
   }
 
-  return (
-    <div className="tracks">
-      {response.map((items, index) => {
-        const image = items.album.images[1].url;
-        const track = items.name;
+  response.forEach((items, index) => {
+    const image = items.images[1].url;
+    const artist = items.name;
+    artistsIds.push(items.id);
 
-        if (index === 0) {
-          console.log("Tracks", items);
-        }
+    if (index === 2) {
+      console.log("Artists", items);
+    }
 
-        return buildJSX("track", index + 1, image, track);
-      })}
-    </div>
-  );
+    htmlList.push(buildJSX("artist", index + 1, image, artist));
+  });
+
+  return [htmlList, artistsIds];
 };
 
-const GetDataFromSpotifyAPI = (type: string): Array<any> => {
+const getTopTracks = (token: string): [JSX.Element[], string[] | undefined] => {
+  const response = GetDataFromSpotifyAPI("tracks", token);
+  const htmlList: JSX.Element[] = [];
+  const albumsIds: string[] = [];
+
+  if (response[0] === "error") {
+    return [GetRedirectHtml(), []];
+  }
+
+  response.map((items, index) => {
+    const image = items.album.images[1].url;
+    const track = items.name;
+    albumsIds.push(items.id);
+
+    if (index === 0) {
+      console.log("Tracks", items);
+    }
+
+    htmlList.push(buildJSX("track", index + 1, image, track));
+  });
+
+  return [htmlList, albumsIds];
+};
+
+const GetRedirectHtml = () => {
+  return [
+    <div>
+      <Redirect to="/login" />
+    </div>,
+  ];
+};
+
+const GetDataFromSpotifyAPI = (type: string, token: string): Array<any> => {
   const [response, setResponse] = useState<any[]>([]);
-  const token = useContext(TokenContext);
   const uri = "https://api.spotify.com/v1/me/top/" + type;
 
   useEffect(() => {
@@ -105,13 +109,20 @@ const buildJSX = (
 };
 
 const Personalization = () => {
-  const topArtists = getTopArtists();
-  const topTracks = getTopTracks();
+  const requestRequirements = useContext(TokenContext);
+  const token = requestRequirements.token;
+  const [topArtists, artistsIds] = getTopArtists(token);
+  const [topTracks, albumsIds] = getTopTracks(token);
+  requestRequirements.artistsId = artistsIds;
+  requestRequirements.albumsId = albumsIds;
 
   return (
     <div>
       {topArtists} <br />
       {topTracks}
+      <TokenContext.Provider value={requestRequirements}>
+        <GetAdditional />
+      </TokenContext.Provider>
     </div>
   );
 };
